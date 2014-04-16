@@ -1,45 +1,45 @@
-#include "StorkApp.h"
+#include "HognoseApp.h"
 #include "Moose.h"
 #include "AppFactory.h"
 #include "ModulesApp.h"
 
 template<>
-InputParameters validParams<StorkApp>()
+InputParameters validParams<HognoseApp>()
 {
   InputParameters params = validParams<MooseApp>();
   return params;
 }
 
-StorkApp::StorkApp(const std::string & name, InputParameters parameters) :
+HognoseApp::HognoseApp(const std::string & name, InputParameters parameters) :
     MooseApp(name, parameters)
 {
   srand(libMesh::processor_id());
   
   Moose::registerObjects(_factory);
   ModulesApp::registerObjects(_factory);
-  StorkApp::registerObjects(_factory);
+  HognoseApp::registerObjects(_factory);
 
   Moose::associateSyntax(_syntax, _action_factory);
   ModulesApp::associateSyntax(_syntax, _action_factory);
-  StorkApp::associateSyntax(_syntax, _action_factory);
+  HognoseApp::associateSyntax(_syntax, _action_factory);
 }
 
-StorkApp::~StorkApp()
+HognoseApp::~HognoseApp()
 {
 }
 
 void
-StorkApp::registerApps()
+HognoseApp::registerApps()
 {
-  registerApp(StorkApp);
+  registerApp(HognoseApp);
 }
 
 void
-StorkApp::registerObjects(Factory & factory)
+HognoseApp::registerObjects(Factory & factory)
 {
 }
 
 void
-StorkApp::associateSyntax(Syntax & syntax, ActionFactory & action_factory)
+HognoseApp::associateSyntax(Syntax & syntax, ActionFactory & action_factory)
 {
 }
