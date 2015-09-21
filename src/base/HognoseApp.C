@@ -7,6 +7,8 @@ template<>
 InputParameters validParams<HognoseApp>()
 {
   InputParameters params = validParams<MooseApp>();
+  params.set<bool>("use_legacy_output_syntax") = false;
+
   return params;
 }
 
@@ -14,7 +16,7 @@ HognoseApp::HognoseApp(const std::string & name, InputParameters parameters) :
     MooseApp(name, parameters)
 {
   srand(libMesh::processor_id());
-  
+
   Moose::registerObjects(_factory);
   ModulesApp::registerObjects(_factory);
   HognoseApp::registerObjects(_factory);
