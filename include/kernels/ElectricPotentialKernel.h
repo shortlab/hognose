@@ -14,32 +14,36 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#ifndef ELECTRICPOTENTIALKERNEL_H
+#define ELECTRICPOTENTIALKERNEL_H
+
+
+#include "Kernel.h"
+
+class ElectricPotentialKernel;
+
+template<>
+InputParameters validParams<ElectricPotentialKernel>();
+
+class ElectricPotentialKernel : public Kernel
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+public:
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
+  ElectricPotentialKernel(const InputParameters & parameters);
+  virtual ~ElectricPotentialKernel();
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
+protected:
 
-  // Execute the application
-  app->run();
+  virtual Real computeQpResidual();
 
-  // Free up the memory we created earlier
-  delete app;
+  const VariableValue & _charge_density;
+  const MaterialProperty<Real> & _h_value;
+  Real _dielectric_constant;
 
-  return 0;
-}
+private:
+
+};
+
+#endif //ELECTRICPOTENTIALKERNEL_H

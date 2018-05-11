@@ -14,32 +14,31 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#include "MultiAppIncrementBC.h"
+
+template<>
+InputParameters validParams<MultiAppIncrementBC>()
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+  InputParameters params = validParams<NodalBC>();
+  params.addParam<Real>("initial_value", "Value for the boundary for the first cycle.");
+  params.addParam<Real>("layer_T_drop",0,"Temperature drop across a layer of oxide.");
+  params.addParam<PostprocessorName>("transition_counter",0,"The postprocessor providing the number of oxide layers.");
+  
+  return params;
+}
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
+MultiAppIncrementBC::MultiAppIncrementBC(const InputParameters & parameters)
+ :NodalBC(parameters),
+  _initial_value(getParam<Real>("initial_value")),
+  _layer_T_drop(getParam<Real>("layer_T_drop")),
+  _transition_counter(getPostprocessorValue("transition_counter"))
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
+{}
 
-  // Execute the application
-  app->run();
-
-  // Free up the memory we created earlier
-  delete app;
-
-  return 0;
+Real
+MultiAppIncrementBC::computeQpResidual()
+{
+  return _u[_qp] - (_initial_value + (_layer_T_drop * _transition_counter));
 }

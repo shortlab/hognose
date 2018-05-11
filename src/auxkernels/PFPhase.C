@@ -14,32 +14,38 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#include "PFPhase.h"
+
+template<>
+InputParameters validParams<PFPhase>()
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+     InputParameters params = validParams<AuxKernel>();
+     params.addRequiredCoupledVar("value", "The phase field non-conserved order parameter.");
+     params.addRequiredParam<Real>("minimum", "The lower bound of a given phase variable.");
+     params.addRequiredParam<Real>("maximum", "The upper bound of a given phase variable.");
+     return params;
+}
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
+PFPhase::PFPhase(const InputParameters & parameters)
+  :AuxKernel(parameters),
+   _value(coupledValue("value")),
+   _min(getParam<Real>("minimum")),
+   _max(getParam<Real>("maximum"))
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
+{}
 
-  // Execute the application
-  app->run();
+Real
+PFPhase::computeValue()
+{
+  double phase=0.0;
 
-  // Free up the memory we created earlier
-  delete app;
+  if ((_value[_qp] > _min) && (_value[_qp] < _max))
+  {
+	phase = 1.0;
+  }
 
-  return 0;
+  return phase;
+ 
 }

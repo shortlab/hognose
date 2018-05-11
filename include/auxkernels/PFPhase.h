@@ -14,32 +14,34 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#ifndef PFPHASE_H
+#define PFPHASE_H
+
+#include "AuxKernel.h"
+  
+
+class PFPhase;
+
+template<>
+InputParameters validParams<PFPhase>();
+
+class PFPhase : public AuxKernel
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+public:
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
+  PFPhase(const InputParameters & parameters);
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
+  virtual ~PFPhase() {}
+  
+protected:
+  virtual Real computeValue();
 
-  // Execute the application
-  app->run();
+ const VariableValue & _value;
+ Real _min;
+ Real _max;
 
-  // Free up the memory we created earlier
-  delete app;
+};
 
-  return 0;
-}
+#endif //PFPHASE_H

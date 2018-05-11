@@ -1,3 +1,19 @@
+/*******************************************************************/
+/*                    DO NOT MODIFY THIS HEADER                    */
+/*                                                                 */
+/*                             HOGNOSE                             */
+/*            High-speed Oxide Growth in a Numerically             */
+/*                Optimized Simulation Environment                 */
+/*                                                                 */
+/*         (c) 2017 Massachusetts Institute of Technology          */
+/*                      ALL RIGHTS RESERVED                        */
+/*                                                                 */
+/*                                                                 */
+/*  Prepared by Andrew Dykhuis and Michael P. Short as a part of   */
+/*  the United States Department of Energy's Consortium for the    */
+/*  Advanced Simulation of Light-Water Reactors (CASL).            */
+/*            					                   */
+/*******************************************************************/
 #ifndef HOGNOSEAPP_H
 #define HOGNOSEAPP_H
 
@@ -11,7 +27,7 @@ InputParameters validParams<HognoseApp>();
 class HognoseApp : public MooseApp
 {
 public:
-  HognoseApp(const std::string & name, InputParameters parameters);
+  HognoseApp(const InputParameters & parameters);
   virtual ~HognoseApp();
 
   static void registerApps();

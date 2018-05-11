@@ -14,32 +14,51 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#include "MultiAppBCPP.h"
+
+template<>
+InputParameters validParams<MultiAppBCPP>()
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+  InputParameters params = validParams<GeneralPostprocessor>();
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
+  params.addParam<Real>("initial_value", "Value for the boundary for the first cycle.");
+  params.addParam<Real>("layer_T_drop",0,"Temperature drop across a layer of oxide.");
+  params.addParam<PostprocessorName>("transition_counter",0,"The PP providing the number of oxide layers.");
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
 
-  // Execute the application
-  app->run();
+  return params;
+}
 
-  // Free up the memory we created earlier
-  delete app;
+MultiAppBCPP::MultiAppBCPP(const InputParameters & parameters) :
+    GeneralPostprocessor(parameters),
+    _value(0),
+    _initial_value(getParam<Real>("initial_value")),
+    _layer_T_drop(getParam<Real>("layer_T_drop")),
+    _transition_counter(getPostprocessorValue("transition_counter"))
+{
+}
 
-  return 0;
+MultiAppBCPP::~MultiAppBCPP()
+{
+}
+
+void
+MultiAppBCPP::initialize()
+{
+}
+
+void
+MultiAppBCPP::execute()
+{
+  
+  _value = (_initial_value + (_layer_T_drop * _transition_counter));
+  
+}
+
+Real
+MultiAppBCPP::getValue()
+{
+  return _value;
 }
