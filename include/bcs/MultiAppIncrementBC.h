@@ -14,32 +14,33 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#include "NodalBC.h"
+
+#ifndef MULTIAPPINCREMENTBC_H
+#define MULTIAPPINCREMENTBC_H
+
+class MultiAppIncrementBC;
+
+template<>
+InputParameters validParams<MultiAppIncrementBC>();
+
+class MultiAppIncrementBC : public NodalBC
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+public:
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
+  MultiAppIncrementBC(const InputParameters & parameters);
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
+protected:
+  virtual Real computeQpResidual();
 
-  // Execute the application
-  app->run();
+private:
 
-  // Free up the memory we created earlier
-  delete app;
+  Real _initial_value;
+  Real _layer_T_drop;
+  const PostprocessorValue & _transition_counter;
+  
+};
 
-  return 0;
-}
+#endif //MULTIAPPINCREMENTBC_H

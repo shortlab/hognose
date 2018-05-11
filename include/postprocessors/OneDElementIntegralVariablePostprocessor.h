@@ -14,32 +14,37 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#ifndef ONEDELEMENTINTEGRALVARIABLEPOSTPROCESSOR_H
+#define ONEDELEMENTINTEGRALVARIABLEPOSTPROCESSOR_H
+
+#include "ElementIntegralVariablePostprocessor.h"
+
+class OneDElementIntegralVariablePostprocessor;
+
+template<>
+InputParameters validParams<OneDElementIntegralVariablePostprocessor>();
+
+class OneDElementIntegralVariablePostprocessor :
+  public ElementIntegralVariablePostprocessor
+
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+public:
+  OneDElementIntegralVariablePostprocessor(const InputParameters & parameters);
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
+protected:
+  virtual Real computeQpIntegral();
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
+  // Desired units on oxide thickess:
+  MooseEnum _desired_units;
 
-  // Execute the application
-  app->run();
+  // Universal unit scaling factor:
+  Real _universal_scaling_factor;
 
-  // Free up the memory we created earlier
-  delete app;
+  // Mesh width for solid mechanics (at least 2D) simulations:
+  Real _mesh_width;
 
-  return 0;
-}
+};
+
+#endif /* ONEDELEMENTINTEGRALVARIABLEPOSTPROCESSOR_H */

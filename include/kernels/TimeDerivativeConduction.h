@@ -14,32 +14,33 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#ifndef TIMEDERIVATIVECONDUCTION_H
+#define TIMEDERIVATIVECONDUCTION_H
+
+#include "TimeDerivative.h"
+
+class TimeDerivativeConduction;
+
+template<>
+InputParameters validParams<TimeDerivativeConduction>();
+
+class TimeDerivativeConduction : public TimeDerivative
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+public:
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
+  TimeDerivativeConduction(const InputParameters & parameters);
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
+protected:
+  virtual Real computeQpResidual();
 
-  // Execute the application
-  app->run();
+  virtual Real computeQpJacobian();
 
-  // Free up the memory we created earlier
-  delete app;
+  Real _time_coeff;
+  const MaterialProperty<Real> & _zr_mass_density;
+  const MaterialProperty<Real> & _zr_specific_heat;
 
-  return 0;
-}
+};
+
+#endif //TIMEDERIVATIVECONDUCTION_H

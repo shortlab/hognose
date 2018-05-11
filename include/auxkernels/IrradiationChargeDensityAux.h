@@ -14,32 +14,49 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#ifndef IRRADIATIONCHARGEDENSITYAUX_H
+#define IRRADIATIONCHARGEDENSITYAUX_H
+
+#include "AuxKernel.h"
+#include "Function.h"
+
+class IrradiationChargeDensityAux;
+
+template<>
+InputParameters validParams<IrradiationChargeDensityAux>();
+
+class IrradiationChargeDensityAux : public AuxKernel
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+public:
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
+  IrradiationChargeDensityAux(const InputParameters & parameters);
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
+  virtual ~IrradiationChargeDensityAux() {}
+  
+protected:
+  virtual Real computeValue();
 
-  // Execute the application
-  app->run();
+  Real _charge_constant;
+  const MaterialProperty<Real> & _h_value;
+  const MaterialProperty<Real> & _net_iron_change;
+  const VariableValue & _old_phase;
+  const VariableValue & _phase;
+  Real _time_to_full_rho;
+  Function & _rho_function;
+  Real _use_PP;
+  const PostprocessorValue & _charge_constant_PP;
+  const PostprocessorValue & _transition_count;
 
-  // Free up the memory we created earlier
-  delete app;
+  Function & _n_flux;
+  const MaterialProperty<Real> & _fluence;
+  const PostprocessorValue & _fluence_offset;
+  const PostprocessorValue & _time_offset;
+  Real _rho_Fe_value;
+  Real _small_SPP;
+  Real _delayed_Fe;
 
-  return 0;
-}
+};
+
+#endif //IRRADIATIONCHARGEDENSITYAUX_H

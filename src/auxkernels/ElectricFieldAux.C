@@ -14,32 +14,39 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#include "ElectricFieldAux.h"
+
+// Moose
+#include "MooseTypes.h"
+#include "FEProblem.h"
+
+// libMesh
+#include "libmesh/meshfree_interpolation.h"
+#include "libmesh/system.h"
+
+template<>
+InputParameters validParams<ElectricFieldAux>()
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+     InputParameters params = validParams<AuxKernel>();
+     params.addRequiredParam<std::vector<Point> >("normal", "The normal to be used with the gradient.");
+     params.addRequiredCoupledVar("potential","The variable providing the electric potential.");
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
+     return params;
+}
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
+ElectricFieldAux::ElectricFieldAux(const InputParameters & parameters)
+  :AuxKernel(parameters),
+    _normal(getParam<std::vector<Point> >("normal")),
+    _grad_potential(coupledGradient("potential"))
 
-  // Execute the application
-  app->run();
+{}
 
-  // Free up the memory we created earlier
-  delete app;
+Real
+ElectricFieldAux::computeValue()
+{
 
-  return 0;
+  return - _grad_potential[_qp] * _normal[0];
+
 }

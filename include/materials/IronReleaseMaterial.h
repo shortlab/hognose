@@ -14,32 +14,40 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#ifndef IRONRELEASEMATERIAL_H
+#define IRONRELEASEMATERIAL_H
+
+#include "Material.h"
+#include "Function.h"
+
+class IronReleaseMaterial;
+
+template<>
+InputParameters validParams<IronReleaseMaterial>();
+
+class IronReleaseMaterial : public Material
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+public:
+  IronReleaseMaterial(const InputParameters & parameters);
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
+protected:
+  virtual void initQpStatefulProperties() override;
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
+  virtual void computeQpProperties();
 
-  // Execute the application
-  app->run();
+private:
 
-  // Free up the memory we created earlier
-  delete app;
+  Function & _n_flux;
+  const PostprocessorValue & _time_offset;
+  const PostprocessorValue & _fluence_offset;
+  MaterialProperty<Real> & _fluence;
+  const MaterialProperty<Real> & _fluence_old;
+  MaterialProperty<Real> & _test_fluence;
+  MaterialProperty<Real> & _test_fluence_old;
+  MaterialProperty<Real> & _test_diff;
 
-  return 0;
-}
+};
+
+#endif //IRONRELEASEMATERIAL_H

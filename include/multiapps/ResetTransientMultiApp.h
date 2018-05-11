@@ -14,32 +14,37 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
+#ifndef RESETTRANSIENTMULTIAPP_H
+#define RESETTRANSIENTMULTIAPP_H
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#include "TransientMultiApp.h"
+#include "PostprocessorInterface.h"
+
+// Forward declarations
+class ResetTransientMultiApp;
+//class Transient;
+
+template <>
+InputParameters validParams<ResetTransientMultiApp>();
+
+class ResetTransientMultiApp : public TransientMultiApp,
+			       public PostprocessorInterface
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+public:
+  ResetTransientMultiApp(const InputParameters & parameters);
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
 
-  // Execute the application
-  app->run();
+  virtual void preTransfer(Real dt, Real target_time) override;
 
-  // Free up the memory we created earlier
-  delete app;
+private:
 
-  return 0;
-}
+  const PostprocessorValue & _oxide_thickness;
+
+  Real _transition_thickness;
+
+};
+
+
+#endif // RESETTRANSIENTMULTIAPP_H

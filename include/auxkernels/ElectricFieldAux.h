@@ -14,32 +14,33 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#ifndef ELECTRICFIELDAUX_H
+#define ELECTRICFIELDAUX_H
+
+#include "AuxKernel.h"
+  
+class ElectricFieldAux;
+
+template<>
+InputParameters validParams<ElectricFieldAux>();
+
+
+class ElectricFieldAux : public AuxKernel
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+public:
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
+  ElectricFieldAux(const InputParameters & parameters);
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
+  virtual ~ElectricFieldAux() {}
+  
+protected:
+  virtual Real computeValue();
 
-  // Execute the application
-  app->run();
+  std::vector<Point> _normal;
+  const VariableGradient & _grad_potential;
 
-  // Free up the memory we created earlier
-  delete app;
+};
 
-  return 0;
-}
+#endif //ELECTRICFIELDAUX_H

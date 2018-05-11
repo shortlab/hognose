@@ -14,32 +14,34 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#ifndef CONDUCTION_H
+#define CONDUCTION_H
+
+
+#include "Diffusion.h"
+
+class Conduction;
+
+template<>
+InputParameters validParams<Conduction>();
+
+class Conduction : public Diffusion
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+public:
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
+  Conduction(const InputParameters & parameters);
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
+protected:
 
-  // Execute the application
-  app->run();
+  virtual Real computeQpResidual();
+  virtual Real computeQpJacobian();
 
-  // Free up the memory we created earlier
-  delete app;
+  const MaterialProperty<Real> & _zr_conductivity;
 
-  return 0;
-}
+private:
+ 
+};
+
+#endif //CONDUCTION_H

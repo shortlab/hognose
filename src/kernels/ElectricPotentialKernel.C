@@ -14,32 +14,36 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#include "ElectricPotentialKernel.h"
+
+template<>
+InputParameters validParams<ElectricPotentialKernel>()
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+  InputParameters params = validParams<Kernel>();
+  params.addRequiredCoupledVar("charge_density","The variable providing the charge density.");
+  params.addParam<Real>("dielectric_constant",1.0,"The value of the dielectric constant");
+  return params;
+}
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
+ElectricPotentialKernel::ElectricPotentialKernel(const InputParameters & parameters) :
+    Kernel(parameters),
+    _charge_density(coupledValue("charge_density")),
+    _h_value(getMaterialProperty<Real>("h_value")),
+    _dielectric_constant(getParam<Real>("dielectric_constant"))
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
+{}
 
-  // Execute the application
-  app->run();
+ElectricPotentialKernel::~ElectricPotentialKernel()
+{}
 
-  // Free up the memory we created earlier
-  delete app;
+Real
+ElectricPotentialKernel::computeQpResidual()
+{
+  Real dielectric_constant = _dielectric_constant * 8.854187817620e-12;
 
-  return 0;
+  Real charge = 1.602e-19; // C
+
+  return _test[_i][_qp] * _charge_density[_qp] * _h_value[_qp] * charge / dielectric_constant;
 }

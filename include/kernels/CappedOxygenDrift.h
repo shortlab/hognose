@@ -14,32 +14,40 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#ifndef CAPPEDOXYGENDRIFT_H
+#define CAPPEDOXYGENDRIFT_H
+
+
+#include "Kernel.h"
+
+class CappedOxygenDrift;
+
+template<>
+InputParameters validParams<CappedOxygenDrift>();
+
+class CappedOxygenDrift : public Kernel
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+public:
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
+  CappedOxygenDrift(const InputParameters & parameters);
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
+protected:
 
-  // Execute the application
-  app->run();
+  virtual Real computeQpResidual();
+  virtual Real computeQpJacobian();
+  virtual Real computeQpOffDiagJacobian(unsigned int jvar);
 
-  // Free up the memory we created earlier
-  delete app;
+  const VariableGradient & _grad_potential;
+  unsigned int _v_var;
+  const MaterialProperty<Real> & _total_diffusivity_factor;
+  const MaterialProperty<Real> & _h_value;
+  const MaterialProperty<Real> & _o_ion_mobility;
+  Real _drift_conc;
 
-  return 0;
-}
+private:
+
+};
+
+#endif //CAPPEDOXYGENDRIFT_H

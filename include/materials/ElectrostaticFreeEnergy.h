@@ -14,32 +14,35 @@
 /*  Advanced Simulation of Light-Water Reactors (CASL).            */
 /*            					                   */
 /*******************************************************************/
-#include "HognoseApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
 
-// Create a performance log
-PerfLog Moose::perf_log("Hognose");
+#ifndef ELECTROSTATICFREEENERGY_H
+#define ELECTROSTATICFREEENERGY_H
 
-// Begin the main program.
-int main(int argc, char *argv[])
+#include "DerivativeFunctionMaterialBase.h"
+
+class ElectrostaticFreeEnergy;
+
+template<>
+InputParameters validParams<ElectrostaticFreeEnergy>();
+
+class ElectrostaticFreeEnergy : public DerivativeFunctionMaterialBase
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
+public:
+  ElectrostaticFreeEnergy(const InputParameters & parameters);
 
-  // Register this application's MooseApp and any it depends on
-  HognoseApp::registerApps();
+protected:
+  virtual Real computeF();
+  virtual Real computeDF(unsigned int j_var);
+  virtual Real computeD2F(unsigned int j_var, unsigned int k_var);
+  virtual Real computeD3F(unsigned int j_var, unsigned int k_var, unsigned int l_var);
 
-  // This creates dynamic memory that we're responsible for deleting
-  MooseApp * app = AppFactory::createApp("HognoseApp", argc, argv);
+private:
 
-  // Execute the application
-  app->run();
+  Real _relative_permittivity;
+  Real _metal_permittivity;
+  const VariableGradient & _grad_potential;
+  const MaterialProperty<Real> & _h_value;
+  unsigned int _potential_var;
+};
 
-  // Free up the memory we created earlier
-  delete app;
-
-  return 0;
-}
+#endif //ELECTROSTATICFREEENERGY_H
